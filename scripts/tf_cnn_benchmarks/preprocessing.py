@@ -500,8 +500,7 @@ class RecordInputImagePreprocessor(object):
       images = [[] for _ in range(self.num_splits)]
       labels = [[] for _ in range(self.num_splits)]
       if use_datasets:
-        glob_pattern = dataset.tf_record_pattern(subset)
-        file_names = gfile.Glob(glob_pattern)
+        file_names = dataset.record_filenames(subset)
         if not file_names:
           raise ValueError('Found no files in --data_dir matching: {}'
                            .format(glob_pattern))

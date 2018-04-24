@@ -462,7 +462,7 @@ def _build_nasnet_base(images,
       hparams.num_cells, hparams.num_reduction_layers)
   stem_cell = reduction_cell
 
-  if stem_type == 'imagenet':
+  if 'imagenet' in stem_type:
     stem = lambda: _imagenet_stem(images, hparams, stem_cell)
   elif stem_type == 'cifar':
     stem = lambda: _cifar_stem(images, hparams)
@@ -480,7 +480,7 @@ def _build_nasnet_base(images,
   # Run the cells
   filter_scaling = 1.0
   # true_cell_num accounts for the stem cells
-  true_cell_num = 2 if stem_type == 'imagenet' else 0
+  true_cell_num = 2 if 'imagenet' in stem_type else 0
   for cell_num in range(hparams.num_cells):
     stride = 1
     if hparams.skip_reduction_layer_input:

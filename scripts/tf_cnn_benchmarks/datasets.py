@@ -29,6 +29,7 @@ import preprocessing
 
 
 IMAGENET_NUM_TRAIN_IMAGES = 1281167
+IMAGENET_AUGMENTED_NUM_TRAIN_IMAGES = IMAGENET_NUM_TRAIN_IMAGES * 5
 IMAGENET_NUM_VAL_IMAGES = 50000
 
 
@@ -36,6 +37,8 @@ def create_dataset(data_dir, data_name):
   """Create a Dataset instance based on data_dir and data_name."""
   supported_datasets = {
       'imagenet': ImagenetData,
+      'imagenet-augmented': ImagenetAugmentedData,
+      'imagenet-augmented-objects': ImagenetAugmentedObjectStorage,
       'cifar10': Cifar10Data,
   }
   if not data_dir and not data_name:
@@ -123,6 +126,51 @@ class ImagenetData(Dataset):
       return preprocessing.SyntheticImagePreprocessor
     else:
       return preprocessing.RecordInputImagePreprocessor
+
+
+class ImagenetAugmentedData(Dataset):
+
+  def __init__(self, data_dir=None):
+    super(ImagenetAugmentedData, self).__init__('imagenet-augmented',
+                                                300,
+                                                300,
+                                                data_dir=data_dir)
+
+  def record_filenames(self, subset):
+    glob_pattern = self.tf_record_pattern(subset)
+    return gfile.Glob(glob_pattern)
+
+  def num_examples_per_epoch(self, subset='train'):
+    if subset == 'train':
+      return IMAGENET_AUGMENTED_NUM_TRAIN_IMAGES
+    elif subset == 'validation':
+      return IMAGENET_NUM_VAL_IMAGES
+    else:
+      raise ValueError('Invalid data subset "%s"' % subset)
+
+  def get_image_preprocessor(self):
+    return preprocessing.RecordInputImagePreprocessor
+
+
+class ImagenetAugmentedObjectStorage(ImagenetAugmentedData):
+
+  TRAIN_TFREC_FILE_COUNT = 5120
+  VAL_TFREC_FILE_COUNT = 128
+
+  def __init__(self, data_dir=None):
+    super(ImagenetAugmentedObjectStorage, self).__init__(
+      data_dir=data_dir
+    )
+
+  def record_filenames(self, subset):
+    if subset == 'train':
+      return '{0}/train-*-of-05120'.format(self.data_dir.strip('/'))
+    if subset == 'validation':
+      return ['{0}/validation-{1}-of-{2}'
+              .format(self.data_dir.strip('/'),
+                      str(i).zfill(5),
+                      str(self.VAL_TFREC_FILE_COUNT).zfill(5))
+              for i in range(self.VAL_TFREC_FILE_COUNT)]
 
 
 class Cifar10Data(Dataset):

@@ -103,7 +103,9 @@ flags.DEFINE_string('data_dir', None,
                     'protobufs). If not specified, synthetic data will be '
                     'used.')
 flags.DEFINE_string('data_name', None,
-                    'Name of dataset: imagenet or cifar10. If not specified, '
+                    'Name of dataset: imagenet, imagenet-augmented, '
+                    'imagenet-augmented-objects or cifar10.'
+                    ' If not specified, '
                     'it is automatically guessed based on data_dir.')
 flags.DEFINE_string('resize_method', 'bilinear',
                     'Method for resizing input images: crop, nearest, '
